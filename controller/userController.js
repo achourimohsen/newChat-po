@@ -1,19 +1,21 @@
-const userModel = require("../model/userModel")
-const socketIo = require("socket.io")
+const userModel = require("../model/userModel");
+const socketIo = require("socket.io");
 
 module.exports = {
-    gets: async(req, res) => {
+    gets: async (req, res) => {
         try {
-            const users = await userModel.find()
+            const users = await userModel
+                .find()
+                .select(" -password -role -__v ");
             res.status(200).json({
                 message: "All Users",
-                data: users
-            })
-          } catch(error) {
-            res.status(500).json({ 
-                message: error.message 
-            })
-          }
+                data: users,
+            });
+        } catch (error) {
+            res.status(500).json({
+                message: error.message,
+            });
+        }
     },
     // createMessage: async(req, res) => {
     //     const {user, content} = req.body
@@ -29,5 +31,5 @@ module.exports = {
     //             message: error.message
     //         })
     //     }
-    // } 
-}
+    // }
+};
