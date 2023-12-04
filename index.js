@@ -1,77 +1,3 @@
-// // decralation part *******
-// const express = require("express");
-// const cors = require("cors");
-// const { success, error } = require("consola");
-// const mongoose = require("mongoose");
-// const http = require("http");
-// const socketIo = require("socket.io");
-// const { createServer } = require("node:http");
-// const { join } = require("node:path");
-// const { Server } = require("socket.io");
-
-// const app = express();
-// const server = createServer(app);
-// const io = new Server(server);
-
-// const port = 3300;
-
-// const dotenv = require("dotenv");
-// dotenv.config();
-
-// // configuration part *******
-// app.use(cors());
-// app.use(express.json());
-
-// app.use("/api/auth", require("./route/authRoute"));
-
-// app.use("/user", require("./route/userRoute"));
-
-// app.use("/message", require("./route/messageRoute"));
-
-// // connect to DB *******
-// const connectDB = require("./config/database");
-// connectDB();
-
-// // Socket.io *******
-
-// io.on("connection", (socket) => {
-//     console.log("a user connected");
-// });
-
-// // io.on("connection", (socket) => {
-// // console.log("User connected");
-// // When you receive a message
-// // socket.on("message", async (data) => {
-// //     try {
-// //         const newMessage = new Message({
-// //             user: data.user,
-// //             content: data.content,
-// //         });
-// //         await newMessage.save();
-// //         io.emit("message", data);
-// //     } catch (error) {
-// //         console.error(error);
-// //     }
-// // });
-// // When the user disconnect
-// //     socket.on("disconnect", () => {
-// //         console.log("User disconnected");
-// //     });
-// // });
-
-// // test part *******
-// server.listen(port, () => {
-//     console.log(`Server is running on port ${port}`);
-//     try {
-//         success({
-//             message: `Success to port ${port}`,
-//             badge: true,
-//         });
-//     } catch (error) {
-//         // error({ message: error.message });
-//     }
-// });
-
 // Declaration part
 const express = require("express");
 const cors = require("cors");
@@ -126,12 +52,13 @@ io.on("connection", (socket) => {
         const connectUser = await userModel.findByIdAndUpdate(
             userId,
             {
-                $set: { isconnect: true },
+                $set: { isconnect: true, socketId: socket.id },
             },
             { new: true }
         );
 
         io.emit("isconnected", connectUser);
+        console.log(connectUser);
     });
 
     socket.on("deconnected", async (userId) => {
@@ -164,12 +91,21 @@ io.on("connection", (socket) => {
         }
     });
     // When the user disconnect
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async () => {
         users--;
+
+        const connectUser = await userModel.findOneAndUpdate(
+            { socketId: socket.id },
+            {
+                $set: { isconnect: false },
+            },
+            { new: true }
+        );
 
         io.emit("userdeconnect", users);
 
         console.log("socketId", socket.id);
+        console.log(connectUser);
         console.log("User disconnected", users);
     });
 });
