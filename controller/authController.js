@@ -39,10 +39,19 @@ module.exports = {
 
             await newUser.save();
 
+            const token = jwt.sign(
+                {
+                    email: newUser.email,
+                    password: newUser.password,
+                },
+                "priveteKey"
+            );
+
             res.status(200).json({
                 success: true,
                 message: "successduly created",
-                data: newUser,
+                token,
+                user: newUser,
             });
         } catch (error) {
             res.status(500).json({
@@ -80,7 +89,12 @@ module.exports = {
                 "priveteKey"
             );
 
-            res.json({ token, user });
+            res.status(200).json({
+                success: true,
+                message: "successduly created",
+                token,
+                user,
+            });
         } catch (error) {
             res.status(500).json({
                 message: "failed, Try again",

@@ -11,31 +11,30 @@ const ChatPage = () => {
     const navigate = useNavigate();
 
     const fetchMessages = async () => {
-        try {
-            const response = await axios.get(
-                "http://localhost:3300/api/messages"
-            );
-            setMessages(response.data);
-        } catch (error) {
-            console.error("Error fetching messages:", error);
-        }
+        // try {
+        //     const response = await axios.get(
+        //         "http://localhost:3300/api/messages"
+        //     );
+        //     setMessages(response.data);
+        // } catch (error) {
+        //     console.error("Error fetching messages:", error);
+        // }
     };
 
     const sendMessage = async () => {
-        try {
-            await axios.post("http://localhost:3300/api/messages", {
-                content: newMessage,
-            });
-            setNewMessage("");
-            fetchMessages();
-        } catch (error) {
-            console.error("Error sending message:", error);
-        }
+        // try {
+        //     await axios.post("http://localhost:3300/api/messages", {
+        //         content: newMessage,
+        //     });
+        //     setNewMessage("");
+        //     fetchMessages();
+        // } catch (error) {
+        //     console.error("Error sending message:", error);
+        // }
     };
 
     useEffect(() => {
-        const getAuth = localStorage.getItem("auth");
-        const auth = JSON.parse(getAuth);
+        const auth = JSON.parse(localStorage.getItem("auth"));
 
         if (auth === null) {
             return navigate("/login");

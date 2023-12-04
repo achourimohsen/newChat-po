@@ -16,6 +16,7 @@ import MailIcon from "@mui/icons-material/Mail";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import MoreIcon from "@mui/icons-material/MoreVert";
 import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 
 const Search = styled("div")(({ theme }) => ({
     position: "relative",
@@ -61,6 +62,7 @@ export default function PrimarySearchAppBar() {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
     const [authUser, setAuthUser] = React.useState(null);
+    const auth = JSON.parse(localStorage.getItem("auth"));
 
     React.useEffect(() => {
         const getAuth = localStorage.getItem("auth");
@@ -84,6 +86,12 @@ export default function PrimarySearchAppBar() {
     };
 
     const handleLogout = () => {
+        const socket = io("http://localhost:3300");
+        socket.emit("deconnected", auth.user._id);
+
+        socket.on("isdeconnected", (data) => {
+            console.log(data);
+        });
         localStorage.removeItem("auth");
         return navigate("/login");
     };

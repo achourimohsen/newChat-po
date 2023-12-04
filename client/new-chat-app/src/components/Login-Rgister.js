@@ -59,21 +59,16 @@ const LoginRgister = () => {
                     { email: formData.email, password: formData.password }
                 );
 
-                // const auth = JSON.stringify(res.data);
-
-                // localStorage.setItem("auth", auth);
                 localStorage.setItem("auth", JSON.stringify(res.data));
             } catch (err) {
                 console.log(err.response);
             }
 
-            // const getAuth = localStorage.getItem("auth");
-            // const auth = JSON.parse(getAuth);
-
             const auth = JSON.parse(localStorage.getItem("auth"));
 
-            console.log(auth);
-
+            if (auth === null) {
+                return;
+            }
             if (auth.token) {
                 navigate("/chat");
             }
@@ -90,9 +85,19 @@ const LoginRgister = () => {
                     formData
                 );
 
+                localStorage.setItem("auth", JSON.stringify(res.data));
                 console.log(res);
             } catch (err) {
                 console.log(err.response);
+            }
+
+            const auth = JSON.parse(localStorage.getItem("auth"));
+
+            if (auth === null) {
+                return;
+            }
+            if (auth.token) {
+                navigate("/chat");
             }
 
             setFormData({
@@ -122,7 +127,7 @@ const LoginRgister = () => {
             <form className="auth-form" onSubmit={handleFormSubmit}>
                 {activeTab === "register" && (
                     <div className="form-group">
-                        <label htmlFor="name">Name</label>
+                        <label htmlFor="name">Username</label>
                         <input
                             type="text"
                             id="name"

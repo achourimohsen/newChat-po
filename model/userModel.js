@@ -2,10 +2,16 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
     {
-        username: {
+        avatar: {
             type: String,
-            required: true,
-            unique: true,
+        },
+        firstname: {
+            type: String,
+            // required: true,
+        },
+        lastname: {
+            type: String,
+            // required: true,
         },
         password: {
             type: String,
@@ -22,21 +28,21 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "user",
         },
-        invitations: [
-            {
-                invitedBy: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: "User",
-                },
-            },
-        ],
         friends: [
             {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "User",
             },
         ],
+        invitations: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Invitation",
+            },
+        ],
+        isconnect: { type: Boolean, default: false },
     },
     { timestamp: true }
 );
-module.exports = mongoose.model("User", userSchema);
+const userModel = mongoose.model("User", userSchema);
+module.exports = userModel;
