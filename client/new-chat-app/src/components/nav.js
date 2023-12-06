@@ -113,6 +113,7 @@ export default function PrimarySearchAppBar() {
                 vertical: "top",
                 horizontal: "right",
             }}
+            sx={{ top: "45px" }}
             id={menuId}
             keepMounted
             transformOrigin={{

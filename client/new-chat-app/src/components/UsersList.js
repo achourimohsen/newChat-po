@@ -70,6 +70,10 @@ export default function AlignItemsList() {
                 receiver: id,
             });
 
+            socket.on("getInvitationResponse", (response) => {
+                console.log(response);
+            });
+
             socket.on("getInvitation", (data) => {
                 console.log(data);
             });

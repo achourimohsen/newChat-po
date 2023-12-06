@@ -36,6 +36,7 @@ app.use("/api", require("./routes/invitationRoute"));
 
 // Connect to DB
 const connectDB = require("./config/database");
+const { addInvitation } = require("./controller/invitationControler");
 connectDB();
 
 let users = 0;
@@ -45,8 +46,8 @@ io.on("connection", (socket) => {
 
     io.emit("userconnect", users);
 
-    console.log("socketId", socket.id);
-    console.log("User connected", users);
+    // console.log("socketId", socket.id);
+    // console.log("User connected", users);
 
     socket.on("connected", async (userId) => {
         const connectUser = await userModel.findByIdAndUpdate(
@@ -58,22 +59,25 @@ io.on("connection", (socket) => {
         );
 
         io.emit("isconnected", connectUser);
-        console.log(connectUser);
+        // console.log(connectUser);
     });
 
-    socket.on("deconnected", async (userId) => {
-        const connectUser = await userModel.findByIdAndUpdate(
-            userId,
-            {
-                $set: { isconnect: false },
-            },
-            { new: true }
-        );
+    // socket.on("deconnected", async (userId) => {
+    //     const connectUser = await userModel.findByIdAndUpdate(
+    //         userId,
+    //         {
+    //             $set: { isconnect: false },
+    //         },
+    //         { new: true }
+    //     );
 
-        io.emit("isdeconnected", connectUser);
-    });
+    //     io.emit("isdeconnected", connectUser);
+    // });
 
     socket.on("sendInvitation", (data) => {
+        // console.log(data);
+        addInvitation(data, socket);
+
         io.emit("getInvitation", data);
     });
 
@@ -90,9 +94,12 @@ io.on("connection", (socket) => {
             console.error(error);
         }
     });
+
     // When the user disconnect
     socket.on("disconnect", async () => {
         users--;
+
+        // console.log("socketId", socket.id);
 
         const connectUser = await userModel.findOneAndUpdate(
             { socketId: socket.id },
@@ -104,9 +111,8 @@ io.on("connection", (socket) => {
 
         io.emit("userdeconnect", users);
 
-        console.log("socketId", socket.id);
-        console.log(connectUser);
-        console.log("User disconnected", users);
+        // console.log("connectUser", connectUser);
+        // console.log("User disconnected", users);
     });
 });
 

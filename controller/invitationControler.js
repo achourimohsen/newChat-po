@@ -1,46 +1,23 @@
-// const mongoose = require("mongoose");
-// const Invitation = require("../model/invitationModel");
-// const ObjectId = require("mongodb");
-
-// const addInvitation = async (req, res) => {
-//     const { sender, receiver } = req.body;
-//     console.log(sender, receiver);
-//     console.log(typeof sender);
-
-//     const senderObjectId = new ObjectId(sender);
-
-//     // const senderObjectId = mongoose.Types.ObjectId(sender);
-//     // const receiverObjectId = mongoose.Types.ObjectId(receiver);
-
-//     try {
-//         const invitation = new Invitation({
-//             sender: senderObjectId,
-//             receiver: receiverObjectId,
-//         });
-
-//         await invitation.save();
-//         res.status(200).json(invitation);
-//     } catch (err) {
-//         res.status(500).json(err);
-//     }
-// };
-
-// module.exports = {
-//     addInvitation,
-// };
-
 const mongoose = require("mongoose");
 const Invitation = require("../model/invitationModel");
 const userModel = require("../model/userModel");
 
-const addInvitation = async (req, res) => {
-    const { sender, receiver } = req.body;
+const addInvitation = async (data, socket) => {
+    // const { sender, receiver } = req.body;
+
+    const { sender, receiver } = data;
 
     try {
-        const invitationOne = await Invitation.find({ sender, receiver });
+        const existingInvitation = await Invitation.findOne({
+            sender,
+            receiver,
+        });
 
-        if (invitationOne.length > 0) {
-            return res.send("you'r invited this frind ");
+        if (existingInvitation) {
+            return socket.emit(
+                "getInvitationResponse",
+                "You have already invited this friend."
+            );
         }
 
         const invitation = new Invitation({
@@ -50,21 +27,47 @@ const addInvitation = async (req, res) => {
 
         await invitation.save();
 
-        res.status(200).json(invitation);
-
-        const newInvitation = await Invitation.find({ sender, receiver });
-
-        const InvitationId = newInvitation.map((item) => item._id);
+        const newInvitation = await Invitation.findOne({ sender, receiver });
 
         const receiverUser = await userModel.findByIdAndUpdate(receiver, {
-            $push: { invitations: InvitationId },
+            $push: { invitations: newInvitation._id },
         });
-        console.log(receiverUser);
 
         const senderUser = await userModel.findByIdAndUpdate(sender, {
-            $push: { invitations: InvitationId },
+            $push: { invitations: newInvitation._id },
         });
-        console.log(senderUser);
+
+        socket.emit("getInvitationResponse", invitation);
+    } catch (err) {
+        socket.emit(err);
+    }
+};
+
+const getSenderInvitations = async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const getReceiverInvitations = await Invitation.find({
+            sender: userId,
+        })
+            .populate("receiver", "username email")
+            .select("-_id -__v");
+
+        res.status(200).json(getReceiverInvitations);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+};
+
+const getReceiverInvitations = async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const invitationsToMe = await Invitation.find({
+            receiver: userId,
+        })
+            .populate("sender", "username emeil ")
+            .select("-receiver -__v ");
+        res.status(200).json(invitationsToMe);
     } catch (err) {
         console.log(err);
         res.status(500).json(err);
@@ -73,4 +76,6 @@ const addInvitation = async (req, res) => {
 
 module.exports = {
     addInvitation,
+    getSenderInvitations,
+    getReceiverInvitations,
 };
