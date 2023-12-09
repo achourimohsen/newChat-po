@@ -33,10 +33,12 @@ app.use("/api/auth", require("./routes/authRoute"));
 app.use("/user", require("./routes/userRoute"));
 app.use("/message", require("./routes/messageRoute"));
 app.use("/api", require("./routes/invitationRoute"));
+app.use("/api", require("./routes/notificationRoute"));
 
 // Connect to DB
 const connectDB = require("./config/database");
 const { addInvitation } = require("./controller/invitationControler");
+const { getNotifications } = require("./controller/notificationController");
 connectDB();
 
 let users = 0;
@@ -45,9 +47,6 @@ io.on("connection", (socket) => {
     users++;
 
     io.emit("userconnect", users);
-
-    // console.log("socketId", socket.id);
-    // console.log("User connected", users);
 
     socket.on("connected", async (userId) => {
         const connectUser = await userModel.findByIdAndUpdate(
@@ -59,7 +58,6 @@ io.on("connection", (socket) => {
         );
 
         io.emit("isconnected", connectUser);
-        // console.log(connectUser);
     });
 
     // socket.on("deconnected", async (userId) => {
@@ -72,6 +70,22 @@ io.on("connection", (socket) => {
     //     );
 
     //     io.emit("isdeconnected", connectUser);
+    // });
+
+    socket.on("notification", async (userId) => {
+        const notification = await getNotifications(userId);
+
+        io.emit("responseNotification", notification);
+    });
+
+    // socket.on("notification", async (userId) => {
+    //     const notification = await getNotifications(userId);
+
+    //     io.to(userId).emit("receiveNotification", notification);
+    // });
+
+    // socket.on("sendNotification", (userId, notificationData) => {
+    //     io.to(userId).emit("receiveNotification", notificationData);
     // });
 
     socket.on("sendInvitation", (data) => {
@@ -110,9 +124,6 @@ io.on("connection", (socket) => {
         );
 
         io.emit("userdeconnect", users);
-
-        // console.log("connectUser", connectUser);
-        // console.log("User disconnected", users);
     });
 });
 

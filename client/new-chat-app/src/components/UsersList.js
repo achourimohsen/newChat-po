@@ -13,8 +13,8 @@ import io from "socket.io-client";
 export default function AlignItemsList() {
     const [users, setUsers] = useState([]);
     const [userConect, setuserConect] = useState(null);
-
     const auth = JSON.parse(localStorage.getItem("auth"));
+    const socket = io("http://localhost:3300");
 
     const getUsers = async () => {
         try {
@@ -27,14 +27,13 @@ export default function AlignItemsList() {
     };
 
     useEffect(() => {
-        const socket = io("http://localhost:3300");
         socket.on("connect", () => {
             console.log(` ${auth.user.username} Connected to server`);
 
             socket.emit("connected", auth.user._id);
 
             socket.on("isconnected", (data) => {
-                console.log(data);
+                // console.log(data);
             });
         });
 
@@ -54,7 +53,7 @@ export default function AlignItemsList() {
     }, [userConect]);
 
     const sendInvitation = async (id) => {
-        const socket = io("http://localhost:3300");
+        // const socket = io("http://localhost:3300");
         try {
             // const res = await axios.post(
             //     "http://localhost:3300/api/addInvitation",
@@ -71,11 +70,11 @@ export default function AlignItemsList() {
             });
 
             socket.on("getInvitationResponse", (response) => {
-                console.log(response);
+                // console.log(response);
             });
 
             socket.on("getInvitation", (data) => {
-                console.log(data);
+                // console.log(data);
             });
         } catch (err) {
             console.log(err);
@@ -87,7 +86,6 @@ export default function AlignItemsList() {
             {users
                 ? users.map((items) => (
                       <div
-                          onClick={() => sendInvitation(items._id)}
                           key={items._id}
                           style={{
                               display:
@@ -135,7 +133,7 @@ export default function AlignItemsList() {
                                       </React.Fragment>
                                   }
                               />
-                              <button>
+                              <button onClick={() => sendInvitation(items._id)}>
                                   <PersonAddAlt1Icon />
                               </button>
                           </ListItem>

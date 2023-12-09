@@ -1,10 +1,9 @@
 const mongoose = require("mongoose");
 const Invitation = require("../model/invitationModel");
 const userModel = require("../model/userModel");
+const Notification = require("../model/notificationModel");
 
 const addInvitation = async (data, socket) => {
-    // const { sender, receiver } = req.body;
-
     const { sender, receiver } = data;
 
     try {
@@ -19,6 +18,14 @@ const addInvitation = async (data, socket) => {
                 "You have already invited this friend."
             );
         }
+
+        const notification = new Notification({
+            userId: receiver,
+            message: "sended invitation to you",
+            senderId: sender,
+        });
+
+        await notification.save();
 
         const invitation = new Invitation({
             sender,
@@ -37,7 +44,7 @@ const addInvitation = async (data, socket) => {
             $push: { invitations: newInvitation._id },
         });
 
-        socket.emit("getInvitationResponse", invitation);
+        socket.emit("getInvitationResponse", { invitation, notification });
     } catch (err) {
         socket.emit(err);
     }

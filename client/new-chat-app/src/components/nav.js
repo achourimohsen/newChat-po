@@ -62,7 +62,9 @@ export default function PrimarySearchAppBar() {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
     const [authUser, setAuthUser] = React.useState(null);
+    const [countNotification, setcountNotification] = React.useState([]);
     const auth = JSON.parse(localStorage.getItem("auth"));
+    const socket = io("http://localhost:3300");
 
     React.useEffect(() => {
         const getAuth = localStorage.getItem("auth");
@@ -70,6 +72,8 @@ export default function PrimarySearchAppBar() {
         if (auth) {
             setAuthUser(auth.user);
         }
+
+        console.log(auth);
     }, []);
 
     const navigate = useNavigate();
@@ -104,6 +108,19 @@ export default function PrimarySearchAppBar() {
     const handleMobileMenuOpen = (event) => {
         setMobileMoreAnchorEl(event.currentTarget);
     };
+
+    React.useEffect(() => {
+        socket.emit("notification", auth.user._id);
+
+        socket.on("responseNotification", (notificationData) => {
+            setcountNotification(notificationData);
+        });
+
+        console.log("Updated countNotification:", countNotification);
+        // return () => {
+        //     socket.off("receiveNotification");
+        // };
+    }, [countNotification]);
 
     const menuId = "primary-search-account-menu";
     const renderMenu = (
@@ -231,7 +248,10 @@ export default function PrimarySearchAppBar() {
                             aria-label="show 17 new notifications"
                             color="inherit"
                         >
-                            <Badge badgeContent={17} color="error">
+                            <Badge
+                                badgeContent={countNotification.length}
+                                color="error"
+                            >
                                 <NotificationsIcon />
                             </Badge>
                         </IconButton>
