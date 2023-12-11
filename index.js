@@ -20,7 +20,7 @@ const io = socketIo(server, {
     },
 });
 
-const port = 3300;
+const port = process.env.PORT || 3300;
 
 const dotenv = require("dotenv");
 dotenv.config();
@@ -45,6 +45,8 @@ let users = 0;
 
 io.on("connection", (socket) => {
     users++;
+
+    console.log("a user connect", users);
 
     io.emit("userconnect", users);
 
@@ -111,9 +113,9 @@ io.on("connection", (socket) => {
 
     // When the user disconnect
     socket.on("disconnect", async () => {
-        users--;
+        // users--;
 
-        // console.log("socketId", socket.id);
+        // console.log("a user deconnect", users);
 
         const connectUser = await userModel.findOneAndUpdate(
             { socketId: socket.id },

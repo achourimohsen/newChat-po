@@ -36,13 +36,13 @@ const addInvitation = async (data, socket) => {
 
         const newInvitation = await Invitation.findOne({ sender, receiver });
 
-        const receiverUser = await userModel.findByIdAndUpdate(receiver, {
-            $push: { invitations: newInvitation._id },
-        });
+        // const receiverUser = await userModel.findByIdAndUpdate(receiver, {
+        //     $push: { invitations: newInvitation._id },
+        // });
 
-        const senderUser = await userModel.findByIdAndUpdate(sender, {
-            $push: { invitations: newInvitation._id },
-        });
+        // const senderUser = await userModel.findByIdAndUpdate(sender, {
+        //     $push: { invitations: newInvitation._id },
+        // });
 
         socket.emit("getInvitationResponse", { invitation, notification });
     } catch (err) {
@@ -52,13 +52,14 @@ const addInvitation = async (data, socket) => {
 
 const getSenderInvitations = async (req, res) => {
     const { userId } = req.params;
+    console.log(userId);
     try {
         const getReceiverInvitations = await Invitation.find({
             sender: userId,
         })
             .populate("receiver", "username email")
             .select("-_id -__v");
-
+        console.log(getReceiverInvitations);
         res.status(200).json(getReceiverInvitations);
     } catch (err) {
         res.status(500).json(err);

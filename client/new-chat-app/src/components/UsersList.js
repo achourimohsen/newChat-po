@@ -26,60 +26,78 @@ export default function AlignItemsList() {
         }
     };
 
-    useEffect(() => {
-        socket.on("connect", () => {
-            console.log(` ${auth.user.username} Connected to server`);
-
-            socket.emit("connected", auth.user._id);
-
-            socket.on("isconnected", (data) => {
-                // console.log(data);
-            });
-        });
-
-        socket.on("userconnect", (count) => {
-            setuserConect(count);
-        });
-
-        socket.on("userdeconnect", (count) => {
-            setuserConect(count);
-        });
-
-        getUsers();
-
-        return () => {
-            socket.disconnect();
-        };
-    }, [userConect]);
-
     const sendInvitation = async (id) => {
-        // const socket = io("http://localhost:3300");
         try {
-            // const res = await axios.post(
-            //     "http://localhost:3300/api/addInvitation",
-            //     {
-            //         sender: auth.user._id,
-            //         receiver: id,
-            //     }
-            // );
-            // console.log(res);
-
             socket.emit("sendInvitation", {
                 sender: auth.user._id,
                 receiver: id,
             });
 
             socket.on("getInvitationResponse", (response) => {
-                // console.log(response);
+                console.log(response);
             });
 
             socket.on("getInvitation", (data) => {
-                // console.log(data);
+                console.log(data);
             });
         } catch (err) {
             console.log(err);
         }
     };
+
+    // useEffect(() => {
+    //     socket.on("connect", () => {
+    //         console.log(` ${auth.user.username} Connected to server`);
+
+    //         socket.emit("connected", auth.user._id);
+
+    //         socket.on("isconnected", (data) => {
+    //             // console.log(data);
+    //         });
+    //     });
+
+    //     socket.on("userconnect", (count) => {
+    //         setuserConect(count);
+    //     });
+
+    //     socket.on("userdeconnect", (count) => {
+    //         setuserConect(count);
+    //     });
+
+    //     getUsers();
+
+    //     return () => {
+    //         socket.disconnect();
+    //     };
+    // }, []);
+
+    useEffect(() => {
+        getUsers();
+
+        const handleSocketConnect = () => {
+            console.log(`${auth.user.username} Connected to server`);
+            socket.emit("connected", auth.user._id);
+            socket.on("isconnected", (data) => {
+                // console.log(data);
+            });
+        };
+
+        const handleUserConnect = (count) => {
+            setuserConect(count);
+        };
+
+        const handleUserDeconnect = (count) => {
+            setuserConect(count);
+        };
+
+        socket.on("connect", handleSocketConnect);
+        socket.on("userconnect", handleUserConnect);
+        socket.on("userdeconnect", handleUserDeconnect);
+
+        return () => {
+            socket.disconnect();
+        };
+    }, []);
 
     return (
         <List sx={{ width: "30%", bgcolor: "background.paper" }}>

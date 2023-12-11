@@ -109,18 +109,15 @@ export default function PrimarySearchAppBar() {
         setMobileMoreAnchorEl(event.currentTarget);
     };
 
-    React.useEffect(() => {
+    setInterval(() => {
         socket.emit("notification", auth.user._id);
-
         socket.on("responseNotification", (notificationData) => {
             setcountNotification(notificationData);
         });
-
         console.log("Updated countNotification:", countNotification);
-        // return () => {
-        //     socket.off("receiveNotification");
-        // };
-    }, [countNotification]);
+    }, 3000);
+
+    React.useEffect(() => {}, [countNotification]);
 
     const menuId = "primary-search-account-menu";
     const renderMenu = (
