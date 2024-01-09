@@ -16,7 +16,7 @@ import MailIcon from "@mui/icons-material/Mail";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import MoreIcon from "@mui/icons-material/MoreVert";
 import { useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
+// import { io } from "socket.io-client";
 
 const Search = styled("div")(({ theme }) => ({
     position: "relative",
@@ -58,13 +58,12 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     },
 }));
 
-export default function PrimarySearchAppBar() {
+export default function PrimarySearchAppBar({ socket }) {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
     const [authUser, setAuthUser] = React.useState(null);
     const [countNotification, setcountNotification] = React.useState([]);
     const auth = JSON.parse(localStorage.getItem("auth"));
-    const socket = io("http://localhost:3300");
 
     React.useEffect(() => {
         const getAuth = localStorage.getItem("auth");
@@ -72,8 +71,6 @@ export default function PrimarySearchAppBar() {
         if (auth) {
             setAuthUser(auth.user);
         }
-
-        console.log(auth);
     }, []);
 
     const navigate = useNavigate();
@@ -90,10 +87,9 @@ export default function PrimarySearchAppBar() {
     };
 
     const handleLogout = () => {
-        const socket = io("http://localhost:3300");
-        socket.emit("deconnected", auth.user._id);
+        socket?.emit("deconnected", auth.user._id);
 
-        socket.on("isdeconnected", (data) => {
+        socket?.on("isdeconnected", (data) => {
             console.log(data);
         });
         localStorage.removeItem("auth");
@@ -109,15 +105,13 @@ export default function PrimarySearchAppBar() {
         setMobileMoreAnchorEl(event.currentTarget);
     };
 
-    setInterval(() => {
-        socket.emit("notification", auth.user._id);
-        socket.on("responseNotification", (notificationData) => {
+    React.useEffect(() => {
+        socket?.emit("notification", auth.user._id);
+        socket?.on("responseNotification", (notificationData) => {
             setcountNotification(notificationData);
         });
         console.log("Updated countNotification:", countNotification);
-    }, 3000);
-
-    React.useEffect(() => {}, [countNotification]);
+    }, [socket]);
 
     const menuId = "primary-search-account-menu";
     const renderMenu = (

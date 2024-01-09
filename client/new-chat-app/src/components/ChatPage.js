@@ -4,11 +4,15 @@ import { useNavigate } from "react-router-dom";
 import "../style/ChatPage.css";
 import PrimarySearchAppBar from "./nav";
 import UsersList from "./UsersList";
+import { io } from "socket.io-client";
 
 const ChatPage = () => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const navigate = useNavigate();
+    const [socket, setSocket] = useState(null);
+    const auth = JSON.parse(localStorage.getItem("auth"));
+    const [userConnected, setUserConnected] = useState([]);
 
     const fetchMessages = async () => {
         // try {
@@ -34,7 +38,7 @@ const ChatPage = () => {
     };
 
     useEffect(() => {
-        const auth = JSON.parse(localStorage.getItem("auth"));
+        setSocket(io("http://localhost:3300"));
 
         if (auth === null) {
             return navigate("/login");
@@ -47,15 +51,18 @@ const ChatPage = () => {
         fetchMessages();
     }, []);
 
+    useEffect(() => {
+        socket?.emit("connected", auth.user._id);
+    }, [socket]);
+
     return (
         <div>
-            <PrimarySearchAppBar />
-
+            <PrimarySearchAppBar socket={socket} />
             <div
                 className="chat-page"
                 style={{ display: "flex", padding: "20px 0" }}
             >
-                <UsersList />
+                <UsersList socket={socket} />
                 <div>
                     <div className="container">
                         <h2>Chat Page</h2>

@@ -15,7 +15,6 @@ const LoginRgister = () => {
 
     const appState = useSelector((state) => state.app);
 
-    // الآن يمكنك الوصول إلى القيم المختلفة في حالة التطبيق
     const { loading, auth, error } = appState;
 
     const navigate = useNavigate();

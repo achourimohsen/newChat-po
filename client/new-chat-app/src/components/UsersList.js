@@ -10,11 +10,10 @@ import axios from "axios";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import io from "socket.io-client";
 
-export default function AlignItemsList() {
+export default function AlignItemsList({ socket }) {
     const [users, setUsers] = useState([]);
-    const [userConect, setuserConect] = useState(null);
+    const [userConect, setuserConect] = useState([]);
     const auth = JSON.parse(localStorage.getItem("auth"));
-    const socket = io("http://localhost:3300");
 
     const getUsers = async () => {
         try {
@@ -26,24 +25,31 @@ export default function AlignItemsList() {
         }
     };
 
-    const sendInvitation = async (id) => {
-        try {
-            socket.emit("sendInvitation", {
-                sender: auth.user._id,
-                receiver: id,
-            });
-
-            socket.on("getInvitationResponse", (response) => {
-                console.log(response);
-            });
-
-            socket.on("getInvitation", (data) => {
-                console.log(data);
-            });
-        } catch (err) {
-            console.log(err);
-        }
+    const handleNotification = (senderId, receirverId) => {
+        socket.emit("sendNotifications", {
+            senderId,
+            receirverId,
+        });
     };
+
+    // const sendInvitation = async (id) => {
+    //     try {
+    //         socket.emit("sendInvitation", {
+    //             sender: auth.user._id,
+    //             receiver: id,
+    //         });
+
+    //         socket.on("getInvitationResponse", (response) => {
+    //             console.log(response);
+    //         });
+
+    //         socket.on("getInvitation", (data) => {
+    //             console.log(data);
+    //         });
+    //     } catch (err) {
+    //         console.log(err);
+    //     }
+    // };
 
     // useEffect(() => {
     //     socket.on("connect", () => {
@@ -76,8 +82,8 @@ export default function AlignItemsList() {
 
         const handleSocketConnect = () => {
             console.log(`${auth.user.username} Connected to server`);
-            socket.emit("connected", auth.user._id);
-            socket.on("isconnected", (data) => {
+            socket?.emit("connected", auth.user._id);
+            socket?.on("isconnected", (data) => {
                 // console.log(data);
             });
         };
@@ -90,14 +96,23 @@ export default function AlignItemsList() {
             setuserConect(count);
         };
 
-        socket.on("connect", handleSocketConnect);
-        socket.on("userconnect", handleUserConnect);
-        socket.on("userdeconnect", handleUserDeconnect);
+        // socket?.on("connect", handleSocketConnect);
+        // socket?.on("userconnect", handleUserConnect);
+        // socket?.on("userdeconnect", handleUserDeconnect);
 
         return () => {
-            socket.disconnect();
+            socket?.disconnect();
         };
     }, []);
+
+    useEffect(() => {
+        socket?.on("isconnected", (data) => {
+            setuserConect([...userConect, data]);
+            console.log(data);
+        });
+        console.log("thama 7arka jdida");
+        console.log(userConect);
+    }, [userConect]);
 
     return (
         <List sx={{ width: "30%", bgcolor: "background.paper" }}>
@@ -151,7 +166,14 @@ export default function AlignItemsList() {
                                       </React.Fragment>
                                   }
                               />
-                              <button onClick={() => sendInvitation(items._id)}>
+                              <button
+                                  onClick={() =>
+                                      handleNotification(
+                                          auth.user._id,
+                                          items._id
+                                      )
+                                  }
+                              >
                                   <PersonAddAlt1Icon />
                               </button>
                           </ListItem>

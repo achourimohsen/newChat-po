@@ -43,14 +43,33 @@ connectDB();
 
 let users = 0;
 
+let onlineUsers = [];
+
+const addOnlineUser = (userId, socketId) => {
+    !onlineUsers.some((user) => user.userId === userId) &&
+        onlineUsers.push({ userId, socketId });
+    console.log("onlineUsers", onlineUsers);
+};
+
+const removeOnlineUser = (socketId) => {
+    onlineUsers = onlineUsers.filter((user) => user.socketId !== socketId);
+    console.log("onlineUsers", onlineUsers);
+};
+
+const getUser = (userId) => {
+    return onlineUsers.find((user) => user.userId === userId);
+};
+
 io.on("connection", (socket) => {
     users++;
 
     console.log("a user connect", users);
 
-    io.emit("userconnect", users);
+    // io.emit("userconnect", users);
 
     socket.on("connected", async (userId) => {
+        addOnlineUser(userId, socket.id);
+
         const connectUser = await userModel.findByIdAndUpdate(
             userId,
             {
@@ -60,25 +79,19 @@ io.on("connection", (socket) => {
         );
 
         io.emit("isconnected", connectUser);
+        // io.emit("isconnected", onlineUsers);
     });
 
-    // socket.on("deconnected", async (userId) => {
-    //     const connectUser = await userModel.findByIdAndUpdate(
-    //         userId,
-    //         {
-    //             $set: { isconnect: false },
-    //         },
-    //         { new: true }
-    //     );
+    socket.on("sendNotifications", ({ senderId, receirverId }) => {
+        const receirver = getUser(senderId);
+        io.to(receirver.socket.id).emit("getNotification", senderId);
+    });
 
-    //     io.emit("isdeconnected", connectUser);
+    // socket.on("notification", async (userId) => {
+    //     const notification = await getNotifications(userId);
+
+    //     io.emit("responseNotification", notification);
     // });
-
-    socket.on("notification", async (userId) => {
-        const notification = await getNotifications(userId);
-
-        io.emit("responseNotification", notification);
-    });
 
     // socket.on("notification", async (userId) => {
     //     const notification = await getNotifications(userId);
@@ -113,9 +126,11 @@ io.on("connection", (socket) => {
 
     // When the user disconnect
     socket.on("disconnect", async () => {
-        // users--;
+        users--;
 
-        // console.log("a user deconnect", users);
+        console.log("a user deconnect", users);
+
+        removeOnlineUser(socket.id);
 
         const connectUser = await userModel.findOneAndUpdate(
             { socketId: socket.id },
@@ -125,7 +140,7 @@ io.on("connection", (socket) => {
             { new: true }
         );
 
-        io.emit("userdeconnect", users);
+        // io.emit("userdeconnect", users);
     });
 });
 
